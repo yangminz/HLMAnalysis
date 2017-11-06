@@ -3,7 +3,9 @@ import numpy as np
 from utils.marco import train_80, train_40, test_80, test_40
 
 class CLASSIFIER:
-    def __init__(self):
+    def __init__(self, argv_lst=None):
+        if argv_lst != None:
+            self.argv_lst = argv_lst
         self.Ypred = []
         self.performance = {}
 

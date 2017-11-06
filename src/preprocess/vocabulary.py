@@ -1,6 +1,6 @@
 from utils.marco import snt_mark, funcDict_frame
 from utils.io_file import read_file
-from .word_parser.suffix_tree import suffix_tree_parser
+
 from .word_parser.jieba import jieba_parser
 
 def sentence_length_count(text):
@@ -26,7 +26,6 @@ def sentence_length_count(text):
     return cnt_len_lst, cnt_sum_lst
 
 vcb_dict = {
-    'suffix-tree': suffix_tree_parser,
     'jieba': jieba_parser,
 }
 

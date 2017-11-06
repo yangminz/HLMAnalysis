@@ -1,15 +1,8 @@
 import os, sys, shutil
 
-from .marco import root_dir, funcDict_frame, vcb_mark
+from .marco import root_dir, funcDict_frame, vcb_mark, file_dict
 
 def read_file(text_key):
-    # make dictionary
-    text_dict = {}
-    for i in range(120):
-        text_dict['sent-%03d'%i] = os.path.join(root_dir, 'data/sent', '%03d.txt'%i)
-        text_dict['epub-%03d'%i] = os.path.join(root_dir, 'data/epub', 'chap%03d.html'%i)
-        text_dict['jieba-%03d'%i] = os.path.join(root_dir, 'data/jieba', '%03d.txt'%i)
-
     def foo(foo_lst):
         # untuple arguments
         [foo_dict, foo_key] = foo_lst
@@ -22,8 +15,8 @@ def read_file(text_key):
             print('File %s not exists'%fpath)
             sys.exit()
 
-    foo_lst = [text_dict, text_key]
-    return funcDict_frame(text_dict, text_key, foo_lst, foo)
+    foo_lst = [file_dict, text_key]
+    return funcDict_frame(file_dict, text_key, foo_lst, foo)
 
 def read_vcb(text_key):
     content = read_file(text_key)

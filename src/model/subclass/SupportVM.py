@@ -4,7 +4,7 @@ from ..classifier import CLASSIFIER
 
 class SVM_classifier(CLASSIFIER):
     def train(self):
-        print('SVM training ...')
+        print('Support Vector Machine training ...')
         self.model = svm.LinearSVC()
         self.model.fit(self.Xtrain, self.Ytrain)
 

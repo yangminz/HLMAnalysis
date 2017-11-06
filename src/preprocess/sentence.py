@@ -1,6 +1,6 @@
 import os, re
 
-from utils.marco import root_dir, snt_mark
+from utils.marco import root_dir, snt_mark, file_dict
 from utils.io_file import read_file, save_txt
 
 replace_lst = [
@@ -37,14 +37,14 @@ def save_splited_sentence():
     # check if already saved
     all_saved = True
     for i in range(120):
-        filename = os.path.join(sent_dir, '%03d.txt'%i)
         # existence check
-        if os.path.isfile(filename) == False:
+        fpath = file_dict['sent-%03d'%i]
+        if os.path.isfile(fpath) == False:
             all_saved = False
             # reading
             chap_text = regularize_epub(i)
             # saving
-            save_txt(filename, chap_text)
+            save_txt(fpath, chap_text)
         else:
             all_saved = all_saved and True
     if all_saved:
