@@ -1,0 +1,250 @@
+<!doctype html>
+<html>
+    <head>
+        <title>《红楼梦》前80回与后40作者判断</title>
+        <meta charset='utf-8'/>
+        <link rel="stylesheet" type="text/css" href="./报告.html_files/github-markdown.css">
+        <style>
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 980px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+        </style>
+        <script>
+            window.onload = function() {
+                if (document.querySelector("script[type=\"math/tex; mode=display\"]") !== null) {
+                    var mathjax = document.createElement("script");
+                    mathjax.src = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML";
+                    document.head.appendChild(mathjax);
+                }
+                if (document.getElementsByTagName("code").length !== 0) {
+                    var highlight = document.createElement("script");
+                    var highlightcss = document.createElement("link");
+                    highlight.src = "http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js";
+                    highlightcss.rel = "stylesheet";
+                    highlightcss.href = "http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/styles/github.min.css";
+                    highlight.onload = function() {hljs.initHighlighting();};
+                    document.head.appendChild(highlight);
+                    document.head.appendChild(highlightcss);
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <article class="markdown-body">
+            <h1 id="%E3%80%8A%E7%BA%A2%E6%A5%BC%E6%A2%A6%E3%80%8B%E5%89%8D80%E5%9B%9E%E4%B8%8E%E5%90%8E40%E4%BD%9C%E8%80%85%E5%88%A4%E6%96%AD">《红楼梦》前80回与后40作者判断</h1>
+<p>赵阳旻，14307130067</p>
+<p>判断《红楼梦》80回前后是否出自同一作者之手，这个问题可以看作是一个文本二分类问题。整体上，《红楼梦》的每一回都可以看作独立的文档，每一回的文档都自有特征。基于这些特征，分类器可以判断文本是出自曹雪芹之手（分类为<code>True</code>），抑或另有作者（分类为<code>False</code>）。</p>
+<p>根据上述的基本思路，可知这个任务最关键的部分在于如何提取特征。不过这个想法也有不尽完善的地方，主要也在于特征提取。</p>
+<p>在之前的叙述中，我们采用了一种“离散”的思路来对待文本的分类。这对于短文、杂文或许是可以的：比如我们判断鲁迅《故事新编》的十篇文章是否出自同一作者之手。</p>
+<p>但小说这个体裁则不然，因其更具有“连续性”。古典小说的创作理论，我们不太能够考察。但回过头来评价古典小说，无非是剧情设计、人物塑造、所展现的社会环境。这些要素相比于词汇，更应该成为主要判据。如果割裂文本，离散地看待它们，则内在逻辑就完全毁灭了。</p>
+<p>众所周知，《红楼梦》前80回的写作特点是“草蛇灰线，伏脉千里”，也就是说伏笔埋得很多，很深。其每个人物的命运，则在《饮仙醪曲演红楼梦》、《制灯迷贾政悲谶语》、《荣国府元宵开夜宴》等回目中揭示。而续本一直被之空言的，正是人物结局和这些伏笔不符。而这种剧情、人物的连续性，在我们按回目判断时都被割裂了。</p>
+<p>至此，我们可以基本得到一个结论：想要通过分析文本内容，进而判断某篇是否出自曹雪芹之手，非常困难。如此一来，分析对象多半还是限制在文字本身（词汇、句法等）。接下来的分析都基于这个前提。</p>
+<h2 id="%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9">特征选择</h2>
+<h3 id="bag-of-words">Bag of Words</h3>
+<p>曹雪芹所著的《红楼梦》的词汇特点是比较明显的，我们作为读者明显有所感受。使用复杂词汇，对于作者而言有某种“炫技”意味，两汉词赋多此类，譬如司马相如《上林赋》描写流水：“临坻注壑，瀺灂霣坠，沈沈隐隐，砰磅訇礚，潏潏淈淈，湁潗鼎沸。”因此可以通过统计词频来进行特征计算，也就是bag of words的策略。在这里，主要问题有两个：</p>
+<ul>
+<li>如何分词？</li><li>选择哪些特征词？</li></ul>
+<h4 id="%E5%88%86%E8%AF%8D">分词</h4>
+<p>中文分词是一个众所周知的基础问题，目前有比较成熟的分词软件：结巴分词等。我对比了清华、结巴等软件的效果，最终还是决定使用结巴分词。</p>
+<p>将结巴分词应用在《红楼梦》上的主要问题在于：它的词典是基于现代文的。若用它来给《尚书》做分词，结果惨不忍睹。好在《红楼梦》还算半文半白，要好许多。饶是如此，结巴分词是否能够较好地给《红楼梦》分词，依然值得质疑。</p>
+<p>好在结巴分词提供了添加词典的API，我便将《红楼梦》人名、诗词词库添加进去。另外，我又手工分了第五回《游幻境指迷十二钗，饮仙醪曲演红楼梦》和第一百零二回《宁国府骨肉病灾襟，大观园符水驱妖孽》。这些数据添加到结巴词典，然后再进行分词。这个词表在<code>data/manual-dict.txt</code>中。</p>
+<p>在考虑分词的问题时，我看到知乎上一位朋友在他的<a href="https://zhuanlan.zhihu.com/p/29209681">文章</a>中也顾虑《红楼梦》的语言风格。他采用了无字典的分词方式。他采用了ukkonen算法快速建立了全文的后缀树，并结合凝固度和自由度制作了词汇表，最后用维特比算法分词。但是据他所说效果反而不如软件好，仅在诗词上有些许进步。而诗词分词的问题完全可以通过添加词典来解决，因此我就没有采用无字典分词。</p>
+<p>已经分好的词在<code>/data/jieba</code>目录下。</p>
+<h4 id="%E7%89%B9%E5%BE%81%E8%AF%8D">特征词</h4>
+<p>按照我们之前的讨论，选择情节相关的特征词十分不妥，而更应改选择表现作者写作习惯的词汇。例如“秦可卿”，只在十三回以前频繁出现，她去世以后自然出场就少了。再比如“醉金刚倪二”，根据脂砚斋的批语，我们知道他在后期是一个非常重要的角色，但续本完全没有表现出来。这些剧情相关的词汇应该摒弃的。</p>
+<p>剧情无关词汇的衡量，主要通过比较方差完成。每一回统计高频词汇（前1000）的词频，整体上取小方差的词汇作为bag of words。这个方法选出来的特征词如下（方差前200小）：</p>
+<pre><code>幸亏, 泪来, 事来, 外, 不住, 当, 接, 混, 近日, 须, 傍, 好处, 动, 横竖, 病了, 嫌, 由, 眼睛, 拉着, 交给, 因见, 一一, 我要, 长, 一则, 本来, 不然, 磕, 道是, 工夫, 言, 两天, 托, 白, 若不, 一点儿, 妥当, 少, 真是, 道理, 闲话, 炕上, 送到, 不中用, 不但, 复, 眼, 何必, 晚上, 好容易, 一阵, 今, 常, 规矩, 迟, 恐怕, 吓的, 一顿, 便知, 两, 可惜, 就要, 一应, 自去, 只顾, 答言, 不来, 受用, 缘故, 再说, 暂且, 好好, 瞧了, 一会子, 反倒, 搁, 一会, 不及, 委屈, 急忙, 从前, 别说, 欢喜, 接着, 要紧, 也好, 未, 有事, 能够, 亏, 各人, 不禁, 索性, 而去, 另, 放下, 极, 凭, 看看, 最, 亲自, 叫做, 吓了一跳, 生, 脸上, 除了, 诧异, 样子, 混帐, 赶忙, 只当, 如, 及, 不怕, 作了, 懂, 打谅, 礼, 那么, 或者, 叹, 收了, 早起, 之后, 吓得, 干净, 说完, 见过, 刚, 底下, 不提, 一齐, 那宝玉, 撵, 名字, 受, 成, 不在, 还说, 尽, 眼泪, 又问, 不免, 便命, 凡, 大哭, 时常, 好歹, 随, 出门, 床上, 一笑, 渐渐, 来回, 了事, 仍旧, 似, 无奈, 打点, 再者, 厉害, 这日, 尚未, 新, 可怜, 抱怨, 换, 几句, 因为, 说得, 一辈子, 念, 了不得, 一定, 敢, 以, 傍边, 呆, 好生, 必定, 我看, 传, 开了, 二则, 一概, 即, 一位, 半天, 偷, 拿来, 剩, 我想, 越, 歇歇, 曾, 无人, 早已, 家中, 次日, 陪笑
+</code></pre><p>为了公平，后40回全部文本+前80回的随机40回文本组成了选词范围，避免前80回对选词干扰过大。可以看到，这个特征词词典还是比较符合曹雪芹的写作习惯的：例如“混”、“横竖”、“一一”、“要紧”、“极”、“道是”这些词，确实很有《红楼梦》的人物语言风格。而如果给这些词分类，多半是属于“写作细节”的，而不是“剧情发展”。如此，我们可以给续本一些补正。</p>
+<h3 id="%E5%8F%A5%E5%AD%90%E9%95%BF%E5%BA%A6">句子长度</h3>
+<p>鲁迅的《汉文学史纲要》曾提出这样一种观点：</p>
+<blockquote>
+<p>巫史非诗人，其职虽止于传事，然厥初亦凭口耳，虑有愆误，则练句协音，以便记诵。文字既作，固无愆误之虞矣，而简策繁重，书削为劳，故复当俭约其文，以省物力，或因旧习，仍作韵言。</p>
+</blockquote>
+<p>因此中国文学的发展中韵文是非常重要的，这一特点在先秦一切文字中都非常明显。不仅仅是《诗经》，甚至《尚书》、《左传》、《楚辞》之中韵文也极多。它对后世文章的影响极大。</p>
+<p>韵文的一大派别是骈文，多四六句。通篇采用四六句的文体不多，常见于两汉、六朝文字。不过其他文体也很受此影响。以韩愈《进学解》为例，它的每个字数的句子数量大概如下：</p>
+<center><img width=85% src="./image/markdown/fig10.png"></center>
+
+<p>可见古文运动虽然摒弃骈文，但四六句式不废。</p>
+<p>高水平的汉语作家常常也不会脱离这个规律，也即他们的句子长度常常以四六为主。相反，大部分现代作家受到分析语的影响，常常在汉语（孤立语）中使用大量从句，这是不地道、低水平的表现。以此作为《红楼梦》的判据，或许是一种策略。</p>
+<p>为了直观上验证这个想法，我将80回与后40回的句子长度频率进行对比：</p>
+<center><img width=85% src="./image/markdown/fig11.png"></center>
+
+<p>可以看到：曹雪芹偏爱短句，所以四六句尤其多，特别是四言句。而续本也多四六句（这是汉语本身的特点），但长句子较之曹雪芹则更加频繁。这体现了作家的文字功底：汉语中四六句容易写出精品文字，文字凝炼，气势恢闳，读之则朗朗上口。</p>
+<p>此外，大家都知道续本的诗词歌赋数量明显低于前80回，句子长度也是衡量词赋数量的一个侧面。</p>
+<p>因此，以句子长度频率为特征，计算其特征向量，是一个比较合理的选择。</p>
+<h2 id="%E5%88%86%E7%B1%BB%E7%AE%97%E6%B3%95">分类算法</h2>
+<p>获得《红楼梦》的文本特征以后，便可以采用分类算法对其进行训练、测试。在这里，我主要采用的算法都来自sklearn提供的API，是几个比较传统的机器学习模型，包括：</p>
+<ul>
+<li>支持向量机</li><li>朴素贝叶斯</li><li>多层感知器</li><li>线性判别分析</li><li>决策树</li><li>最近邻</li></ul>
+<p>在这里简要地概括一下各个算法，和下一节是对应的。</p>
+<h3 id="%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BAsvm">支持向量机SVM</h3>
+<p>原理上讲，支持向量机（SVM）能够使用非线性函数<script type="math/tex"> \phi(\cdot) </script>，在高维空间<script type="math/tex"> \mathbb{R}^{n} </script>表示原特征空间<script type="math/tex"> \mathbb{R}^{m} </script>（维度较低），于是数据点被映射到高空间后能够被超平面<script type="math/tex"> F \in \mathbb{R}^{n-1} </script>分割开：</p>
+<script type="math/tex; mode=display">
+ \phi: \mathbb{R}^{m} \rightarrow \mathbb{R}^{n} \text{, } m < n</script><p>实际上，非线性函数<script type="math/tex"> \phi(\cdot) </script>在对偶问题的解法中等价于一个核函数<script type="math/tex"> \kappa(\cdot, \cdot) </script>：</p>
+<script type="math/tex; mode=display">
+\kappa(x_{i}, x_{j}) = \phi(x_{i}) ^T \phi(x_{j})</script><p>在这个任务中，我采用了sklearn的API：<code>sklearn.svm.LinearSVC()</code>。这是一个线性核函数：</p>
+<script type="math/tex; mode=display">
+\kappa(\mathbf{x}_{i}, \mathbf{x}_{j}) = \mathbf{x}_{i} ^T \mathbf{x}_{j}</script><p>回到任务本身，它是否适合用SVM求解？对于bag of words特征，它的数据分布没有明显特点，也不存在数值异常大和异常小的问题，用SVM是合适的。对于句子长度特征，它常常表现出一种“末端稀疏”的情形：对于长度在15以上的句子常常很少。不过SVM在通过<script type="math/tex"> \phi(\cdot) </script>变换到高空间时，这个缺点常常不会变成问题。因此，SVM是比较适合这个任务的。</p>
+<h3 id="%E9%AB%98%E6%96%AF%E5%88%86%E5%B8%83%E7%9A%84%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AFgnb">高斯分布的朴素贝叶斯GNB</h3>
+<p>朴素贝叶斯分类器假设向量<script type="math/tex"> \mathbf{x} </script>的每个属性<script type="math/tex"> x_{i} </script>（维度轴）独立地影响着分类结果，则有：</p>
+<script type="math/tex; mode=display">
+P(c | \mathbf{x}) = \frac{P(c) P(\mathbf{x} | c)}{P(\mathbf{x})} = \frac{P(c)}{P(\mathbf{x})} \prod_{i=1}^{\text{dim}} P( x_i | c)</script><p>其中<script type="math/tex"> P(c | \mathbf{x}) </script>是后验概率，<script type="math/tex"> P(c) </script>是先验概率，<script type="math/tex"> P(\mathbf{x} | c) </script>是条件概率，<script type="math/tex"> P(\mathbf{x}) </script>是归一化因子。朴素贝叶斯分类的目标是通过数据集训练先验<script type="math/tex"> P(c) </script>与条件概率<script type="math/tex"> P(\mathbf{x} | c) </script>，从而估计后验概率<script type="math/tex"> P(c | \mathbf{x}) </script>：</p>
+<script type="math/tex; mode=display">
+argmax_{c} \frac{P(c)}{P(\mathbf{x})} \prod_{i=1}^{\text{dim}} P( x_i | c) \text{, } c \in \mathcal{Y}</script><p>其中先验<script type="math/tex"> P(c) </script>由频率进行估计，条件概率<script type="math/tex"> P(\mathbf{x} | c) </script>则假定<script type="math/tex"> c </script>类样本在第<script type="math/tex"> i </script>维上服从某种分布。在任务中，sklearn提供了高斯分布的API: <code>sklearn.naive_bayes.GaussianNB</code>，也即假定概率密度函数：</p>
+<script type="math/tex; mode=display">
+p(\mathbf{x}_i | c) = \frac{1}{\sqrt{2 \pi} \sigma_{c, i}} \exp \left( - \frac{(x_{i} - \mu_{c, i})^2}{2 \sigma_{c, i}^2} \right)</script><p>同样，对于bag of words特征，这个算法基本没有问题。对于句子长度特征，在高长度的稀疏部分，计算出的高斯分布均值<script type="math/tex"> \mu_{c, i} </script>和方差<script type="math/tex"> \sigma_{c, i} </script>都很小，所以依然能够找到合适的高斯分布去描述。最重要的是，朴素贝叶斯假定属性之间是独立分布的，所以基本上可以认为这个特点并不会带来问题。</p>
+<h3 id="%E5%A4%9A%E5%B1%82%E6%84%9F%E7%9F%A5%E5%99%A8mlp">多层感知器MLP</h3>
+<p>多层感知器大概可以描述如下：</p>
+<script type="math/tex; mode=display">
+\mathbf{y} = f( \sum_{i=1}^{n} w_{i} x_{i} - \theta )</script><p>其中<script type="math/tex"> f(\cdot) </script>是非线性函数，<script type="math/tex"> \theta </script>是阈值。对于词频特征，这个算法可以照常工作。对于句子长度特征，稀疏部分的<script type="math/tex"> x_{i} </script>贡献基本上都是0。</p>
+<h3 id="%E7%BA%BF%E6%80%A7%E5%88%A4%E5%88%AB%E5%88%86%E6%9E%90lda">线性判别分析LDA</h3>
+<p>LDA的目标是将原来特征空间<script type="math/tex"> \mathbb{R}^m </script>的向量点投影到直线上：</p>
+<script type="math/tex; mode=display">
+y = \mathbf{w}^T \mathbf{x}</script><p>在直线上，使：</p>
+<ul>
+<li>同一类的数据越近越好</li></ul>
+<script type="math/tex; mode=display">
+|| \mathbf{w}^T \mathbf{\mu}_{0} - \mathbf{w}^T \mathbf{\mu}_{1} ||_{2}^{2}</script><ul>
+<li>不同类的数据越远越好</li></ul>
+<script type="math/tex; mode=display">
+\mathbf{w}^T \mathbf{\Sigma}_{0} \mathbf{w} + \mathbf{w}^T \mathbf{\Sigma}_{1} \mathbf{w}</script><p>于是便可以构造优化的目标函数：</p>
+<script type="math/tex; mode=display">
+J = \frac{|| \mathbf{w}^T \mathbf{\mu}_{0} - \mathbf{w}^T \mathbf{\mu}_{1} ||_{2}^{2}}{\mathbf{w}^T \mathbf{\Sigma}_{0} \mathbf{w} + \mathbf{w}^T \mathbf{\Sigma}_{1} \mathbf{w}}</script><p>可见LDA基本也不受长句稀疏性的影响。</p>
+<h3 id="%E5%86%B3%E7%AD%96%E6%A0%91">决策树</h3>
+<p>决策树算法通过对属性的决策结果来进入子树决策，显然在两种特征上都可以工作。</p>
+<h3 id="%E6%9C%80%E8%BF%91%E9%82%BB">最近邻</h3>
+<p>最近邻算法和特征空间<script type="math/tex"> \mathbb{R}^{m} </script>中数据本身的流形结构关系密切。在这里，显然长句稀疏性被清算了，不会对距离有所贡献。但是如果数据流形本身在特征空间中无法简单地表示，则空间度量就非常重要了，因为不同的度量对应了不同的空间几何结构。</p>
+<h2 id="%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90">结果分析</h2>
+<h3 id="%E5%AE%9E%E9%AA%8C%E8%AE%BE%E7%BD%AE">实验设置</h3>
+<h4 id="%E6%95%B0%E6%8D%AE%E6%BA%90">数据源</h4>
+<p>《红楼梦》的著作权等属于曹雪芹，但勘对、点校依然是有相应人员的工作量的。我选用的电子文本的底本是人民文学出版社。令人遗憾的是，网络上能够检索到的txt格式《红楼梦》存在过多谬误：包括将生僻字拆解为两个偏旁、漏字、错字等。我没有使用无字典分词，因此结果上讲对于这些问题不是非常敏感。但是，如果有公开版权的、精心校对过的《红楼梦》，自然更好。</p>
+<p>有一些爱好者整理了epub格式的《红楼梦》，相比于其他格式的文件，错误要少一些，因此我最后使用了epub格式的《红楼梦》作为原始数据。</p>
+<h4 id="%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%92%E5%88%86">数据集划分</h4>
+<p>数据集划分是随机的。由于负样本非常少，也不宜过多划分训练集。</p>
+<ul>
+<li>训练集：20 True + 20 False</li><li>测试集：60 True + 20 False</li></ul>
+<h4 id="%E7%89%B9%E5%BE%81%E8%AF%8D">特征词</h4>
+<p>如前所述，特征词选择是40+40的结构：从前80回里随机选40回，加上全部后40回，一起构成了候选词的选择范围。</p>
+<h4 id="%E7%AE%97%E6%B3%95%E5%8F%82%E6%95%B0">算法参数</h4>
+<p>基本上全部算法都采用了sklearn默认的模式，没有更加精细的调整。即便如此，假若特征构造比较好，也足以完成分类任务了。</p>
+<h3 id="%E5%88%86%E7%B1%BB%E7%BB%93%E6%9E%9C">分类结果</h3>
+<h4 id="%E5%87%86%E7%A1%AE%E7%8E%87accuracy">准确率accuracy</h4>
+<center><img width=85% src="./image/markdown/fig12.png"></center>
+
+<p>可以看到，基本上前两种算法对两种特征的准确率都达到90%以上。而第二种句子长度为特征的算法也相当有效，甚至在KNN中弥补了用词特征的缺陷。用词特征的准确率低，有很大概率是不准确导致的，也就是说，欧几里德的平直空间上，数据流形比较复杂。</p>
+<h4 id="%E5%8F%AC%E5%9B%9E%E7%8E%87recall%E3%80%81%E6%9F%A5%E5%87%86%E7%8E%87precision">召回率recall、查准率precision</h4>
+<center><img width=85% src="./image/markdown/fig13.png"></center>
+
+<p>除了观察召回率与查准率外，我们还可以对BOW提出FP和FN两项，看看机器将哪些回目分错了（根据特征词）：</p>
+<table>
+<thead>
+<tr>
+<th>ALG</th>
+<th>FN</th>
+<th>FP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SVM</td>
+<td>19, 15, 9, 10, 30, 72</td>
+<td>101</td>
+</tr>
+<tr>
+<td>GNB</td>
+<td>19, 9, 10, 43, 72</td>
+<td></td>
+</tr>
+<tr>
+<td>MLP</td>
+<td>19, 27, 9, 10, 30, 63, 72</td>
+<td></td>
+</tr>
+<tr>
+<td>SGD</td>
+<td>9, 10, 63, 72</td>
+<td>91, 101</td>
+</tr>
+<tr>
+<td>LDA</td>
+<td>68, 8, 35, 9, 32, 40, 10, 29, 43, 58, 33, 72</td>
+<td></td>
+</tr>
+<tr>
+<td>DTree</td>
+<td>19, 68, 65, 9, 10, 43, 33, 51</td>
+<td>85, 101</td>
+</tr>
+<tr>
+<td>KNN</td>
+<td>19, 15, 70, 79, 27, 41, 20, 45, 7, 68, 44, 65, 54, 8, 35, 24, 5, 9, 11, 14, 60, 47, 32, 37, 40, 10, 49, 52, 30, 13, 29, 4, 63, 38, 12, 78, 43, 58, 46, 16, 33, 55, 59, 51, 26, 21, 18, 72, 69, 64</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>可以看到，从BOW的分析来看，9、10、72、19是曹雪芹所写的，但反而容易被判为续。这四回是：</p>
+<ul>
+<li>恋风流情友入家塾，起嫌疑顽童闹学堂</li><li>金寡妇贪利权受辱，张太医论病细穷源</li><li>王熙凤恃强羞说病，来旺妇倚势霸成亲</li><li>情切切良宵花解语，意绵绵静日玉生香</li></ul>
+<p>熟悉文本的读者都知道，第九回、第十回的主要场景不在贾府内，类似于一个支线剧情（实际上应该是曹雪芹的一个伏笔），行文节奏则紧张、刺激，和一般的回目确实不太相同。</p>
+<p>反过来，续本中最容易被误判为曹公手笔的则是第一百零一回《大观园月夜感幽魂，散花寺神签惊异兆》。在这一回中，主要人物是王熙凤。而王熙凤的说话方式极具特色，比较容易模仿到，或许这就是为什么此回容易被错分的原因。</p>
+<h3 id="pca%E5%88%86%E6%9E%90">PCA分析</h3>
+<p>将BOW方法获得的数据降到2维，可以得到：</p>
+<center><img width=85% src="./image/markdown/fig14.png"></center>
+<p>可以看到，数据点明显分开了。可见从反映写作细节的特征词入手，确实能够找到作家之间的差异。</p>
+
+<h3>过拟合</h3>
+<p>文本的数据量实在太少了，BOW方法的特征大小是<script type="math/tex">\mathbb{R}^{120 \times 150}</script>，句子长度特征则只有<script type="math/tex">\mathbb{R}^{120 \times 30}</script>。也可以将回目分片，每一片作为一个文档，但这样采取到的特征就太少了。因此模型非常容易陷入过拟合的情况。实验中的模型大多比较简单，一定程度上可以缓解这个问题，但根本上数据太少，因此无法消除矛盾。</p>
+
+<h2 id="%E8%AF%95%E9%AA%8C%E4%BB%A3%E7%A0%81">试验代码</h2>
+<p>代码结构大概如下：</p>
+<pre><code>├── src
+│   ├── utils
+│   │   ├── marco.py 类似于全局变量
+│   │   ├── io_file.py 用于读写文件的函数
+│   │   └── __init__.py
+│   ├── preprocess
+│   │   ├── word_parser 分词
+│   │   │   └── jieba.py
+│   │   ├── vocabulary.py 词汇的预处理
+│   │   ├── sentence.py 句子的预处理
+│   │   └── __init__.py
+│   ├── PCA.py
+│   ├── other
+│   │   ├── sent_len.py 全书句子长度统计
+│   │   └── jinxuejie.py 《进学解》句子长度统计
+│   ├── model
+│   │   ├── subclass 分类器
+│   │   │   ├── SupportVM.py
+│   │   │   ├── StochasticGD.py
+│   │   │   ├── MLPerceptron.py
+│   │   │   ├── LinearDA.py
+│   │   │   ├── KNearest.py
+│   │   │   ├── GaussianNB.py
+│   │   │   └── DecisionTree.py
+│   │   ├── __init__.py
+│   │   ├── feature.py 特征提取
+│   │   └── classifier.py 分类器接口
+│   └── main.ipynb 主程序
+├── readme.md 报告
+├── image
+│   └── markdown 图片
+|       └── ...
+└── data 数据集
+    ├── sent
+    │   └── ...
+    ├── manual-dict.txt 人工分词词典
+    ├── jieba
+    │   └── ...
+    └── epub
+        └── ...
+</code></pre><h2 id="%E5%8F%82%E8%80%83">参考</h2>
+<ul>
+<li>曹雪芹、无名氏《红楼梦》人民文学出版社</li><li>周志华《机器学习》清华大学出版社</li><li><a href="https://zhuanlan.zhihu.com/p/29209681">用 Python 分析《红楼梦》</a></li></ul>
+
+        </article>
+    </body>
+</html>

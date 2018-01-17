@@ -31,8 +31,27 @@ class CLASSIFIER:
         pass
 
     def evaluate(self):
-        match = (self.Ypred == self.Ytest).sum()
-        self.performance['accuracy'] = match / (self.Ytest.shape[0] * 1.0)
+        match = (self.Ypred == self.Ytest)
+
+        for k in ('TP', 'TN', 'FP', 'FN'):
+            self.performance[k] = []
+
+        for i in range(len(test_80)):
+            if match[i] == True:
+                self.performance['TP'] += [test_80[i]]
+            else:
+                self.performance['FN'] += [test_80[i]]
+        
+        for i in range(len(test_40)):
+            ii = i + len(test_80)
+            if match[ii] == True:
+                self.performance['TN'] += [test_40[i]]
+            else:
+                self.performance['FP'] += [test_40[i]]
+
+        self.performance['accuracy'] = match.sum() * 100.0 / len(match)
+        self.performance['precision'] = len(self.performance['TP']) * 100.0 / (len(self.performance['TP']) + len(self.performance['FP']))
+        self.performance['recall'] = len(self.performance['TP']) * 100.0 / (len(self.performance['TP']) + len(self.performance['FN']))
 
         return self.performance
 
@@ -40,4 +59,4 @@ class CLASSIFIER:
         self.evaluate()
         print('Report:')
         for i in self.performance:
-            print('\t%s: %.2f%%'%(i, self.performance[i] * 100.0))
+            print('\t%s:'%(i), self.performance[i])

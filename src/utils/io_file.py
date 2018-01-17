@@ -1,6 +1,6 @@
 import os, sys, shutil
 
-from .marco import root_dir, funcDict_frame, vcb_mark, file_dict
+from .marco import root_dir, funcDict_frame, vcb_mark, snt_mark, file_dict
 
 def read_file(text_key):
     def foo(foo_lst):
@@ -21,6 +21,10 @@ def read_file(text_key):
 def read_vcb(text_key):
     content = read_file(text_key)
     return content.split(vcb_mark)
+
+def read_snt(text_key):
+    content = read_file(text_key)
+    return content.split(snt_mark)
 
 def save_txt(filename, content):
     print('Saving to txt file', filename, '...')
